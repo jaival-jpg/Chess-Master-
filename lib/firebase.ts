@@ -22,9 +22,9 @@ export const signInWithGoogle = async () => {
       // Create new user profile
       await setDoc(userRef, {
         uid: user.uid,
-        displayName: user.displayName,
-        email: user.email,
-        photoURL: user.photoURL,
+        displayName: user.displayName || 'Player',
+        email: user.email || null,
+        photoURL: user.photoURL || null,
         coins: 1000, // Initial coins
         createdAt: serverTimestamp()
       });
