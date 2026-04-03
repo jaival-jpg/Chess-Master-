@@ -1,0 +1,120 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isDocOwner() {
+      return isAuthenticated() && request.auth.uid == resource.data.uid;
+    }
+    
+    function uidUnchanged() {
+      return !('uid' in request.resource.data) || request.resource.data.uid == request.auth.uid;
+    }
+    
+    function uidNotModified() {
+      return !('uid' in request.resource.data) || request.resource.data.uid == resource.data.uid;
+    }
+    
+    function hasRequiredFields(fields) {
+      return request.resource.data.keys().hasAll(fields);
+    }
+    
+    function validStringLength(field, minLen, maxLen) {
+      return request.resource.data[field] is string &&
+        request.resource.data[field].size() >= minLen &&
+        request.resource.data[field].size() <= maxLen;
+    }
+    
+    function isValidEmail(email) {
+      return email is string && email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
+    }
+    
+    function hasOnlyAllowedFields(fields) {
+      return request.resource.data.keys().hasOnly(fields);
+    }
+    
+    function areImmutableFieldsUnchanged(fields) {
+      return !request.resource.data.diff(resource.data).affectedKeys().hasAny(fields);
+    }
+
+    // ===============================================================
+    // Domain Validators
+    // ===============================================================
+    
+    function isValidUser() {
+      let data = request.resource.data;
+      return hasOnlyAllowedFields(['uid', 'displayName', 'email', 'photoURL', 'coins', 'createdAt']) &&
+             data.uid is string && data.uid == request.auth.uid &&
+             data.displayName is string && data.displayName.size() > 0 && data.displayName.size() <= 50 &&
+             data.email is string && isValidEmail(data.email) &&
+             (!('photoURL' in data) || (data.photoURL is string && data.photoURL.size() <= 1000000)) &&
+             data.coins is number && data.coins >= 0 &&
+             data.createdAt is timestamp;
+    }
+
+    function isValidGameUpdate() {
+      let data = request.resource.data;
+      let oldData = resource.data;
+      
+      let isPlayer = request.auth.uid == oldData.players.white || request.auth.uid == oldData.players.black;
+      let isJoining = oldData.status == 'waiting' && data.status == 'playing' && 
+                      ((oldData.players.white == null && data.players.white == request.auth.uid) || 
+                       (oldData.players.black == null && data.players.black == request.auth.uid));
+                       
+      let isMoveUpdate = oldData.status == 'playing' && data.status == 'playing' && isPlayer &&
+                         data.fen is string && data.fen.size() <= 100 &&
+                         data.history is list && data.history.size() <= 500 &&
+                         areImmutableFieldsUnchanged(['players', 'bet', 'createdAt']);
+                         
+      let isGameEnd = oldData.status == 'playing' && data.status == 'finished' && isPlayer &&
+                      data.winner is string && data.winner.size() <= 50 &&
+                      areImmutableFieldsUnchanged(['players', 'bet', 'createdAt']);
+
+      return hasOnlyAllowedFields(['id', 'status', 'players', 'fen', 'history', 'bet', 'winner', 'createdAt', 'updatedAt']) &&
+             data.updatedAt is timestamp &&
+             (isJoining || isMoveUpdate || isGameEnd);
+    }
+
+    function isValidGameCreate() {
+      let data = request.resource.data;
+      return hasOnlyAllowedFields(['id', 'status', 'players', 'fen', 'history', 'bet', 'createdAt', 'updatedAt']) &&
+             data.id is string && data.id.size() <= 50 &&
+             data.status == 'waiting' &&
+             data.players is map && data.players.keys().hasOnly(['white', 'black']) &&
+             (data.players.white == request.auth.uid || data.players.black == request.auth.uid) &&
+             data.fen is string && data.fen.size() <= 100 &&
+             data.history is list && data.history.size() == 0 &&
+             data.bet is number && data.bet >= 0 &&
+             data.createdAt is timestamp &&
+             data.updatedAt is timestamp;
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /users/{userId} {
+      allow read: if isOwner(userId);
+      allow create: if isOwner(userId) && isValidUser() && uidUnchanged();
+      allow update: if isOwner(userId) && isValidUser() && uidNotModified() && areImmutableFieldsUnchanged(['createdAt']);
+    }
+
+    match /games/{gameId} {
+      allow read: if isAuthenticated(); // Anyone can watch games
+      allow create: if isAuthenticated() && isValidGameCreate();
+      allow update: if isAuthenticated() && isValidGameUpdate();
+    }
+  }
+}

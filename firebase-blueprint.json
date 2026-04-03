@@ -1,0 +1,109 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "A registered user of the application.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "description": "The unique identifier of the user (from Firebase Auth)."
+        },
+        "displayName": {
+          "type": "string",
+          "description": "The user's display name."
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "The user's email address."
+        },
+        "photoURL": {
+          "type": "string",
+          "format": "uri",
+          "description": "The URL of the user's profile picture."
+        },
+        "coins": {
+          "type": "number",
+          "description": "The number of coins the user has."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the user account was created."
+        }
+      },
+      "required": ["uid", "displayName", "email", "coins", "createdAt"]
+    },
+    "GameSession": {
+      "title": "Game Session",
+      "description": "A real-time chess game session.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "The unique identifier of the game session."
+        },
+        "status": {
+          "type": "string",
+          "enum": ["waiting", "playing", "finished"],
+          "description": "The current status of the game."
+        },
+        "players": {
+          "type": "object",
+          "description": "The players in the game.",
+          "properties": {
+            "white": {
+              "type": "string",
+              "description": "The UID of the player playing white."
+            },
+            "black": {
+              "type": "string",
+              "description": "The UID of the player playing black."
+            }
+          }
+        },
+        "fen": {
+          "type": "string",
+          "description": "The current FEN string representing the board state."
+        },
+        "history": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "The move history in SAN format."
+        },
+        "bet": {
+          "type": "number",
+          "description": "The bet amount for this game."
+        },
+        "winner": {
+          "type": "string",
+          "description": "The UID of the winner, or 'draw' if it's a draw."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the game was created."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the game was last updated."
+        }
+      },
+      "required": ["id", "status", "players", "fen", "history", "bet", "createdAt", "updatedAt"]
+    }
+  },
+  "firestore": {
+    "users/{userId}": {
+      "schema": "User",
+      "description": "Stores user profiles."
+    },
+    "games/{gameId}": {
+      "schema": "GameSession",
+      "description": "Stores active and past game sessions."
+    }
+  }
+}

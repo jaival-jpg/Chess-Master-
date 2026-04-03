@@ -1,0 +1,5 @@
+{
+  "name": "Chess Master Pro",
+  "description": "A premium chess game with AI, local multiplayer, and coin challenges.",
+  "requestFramePermissions": []
+}
