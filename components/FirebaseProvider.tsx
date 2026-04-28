@@ -27,16 +27,20 @@ export function FirebaseProvider({ children }: { children: React.ReactNode }) {
               photoURL: data.photoURL || firebaseUser.photoURL,
               coins: data.coins || 0,
             });
+            setAuthReady(true);
           } else {
-             setUser({
-              uid: firebaseUser.uid,
-              displayName: firebaseUser.displayName,
-              email: firebaseUser.email,
-              photoURL: firebaseUser.photoURL,
-              coins: 0,
-            });
+             // Create the user profile since it doesn't exist yet
+             import('firebase/firestore').then(({ setDoc, serverTimestamp }) => {
+               setDoc(userRef, {
+                 uid: firebaseUser.uid,
+                 displayName: firebaseUser.displayName || 'Player',
+                 email: firebaseUser.email || null,
+                 photoURL: firebaseUser.photoURL || null,
+                 coins: 1000, // Initial coins
+                 createdAt: serverTimestamp()
+               }).catch(e => console.error("Error creating user profile", e));
+             });
           }
-          setAuthReady(true);
         }, (err: any) => {
            if (err.code === 'permission-denied' && !auth.currentUser) {
              // Ignore error caused by signing out before unsubscribe

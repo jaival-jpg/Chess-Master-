@@ -4,9 +4,10 @@ import { motion } from 'motion/react';
 import { useRouter } from 'next/navigation';
 import { GlassButton } from '@/components/GlassButton';
 import { useGameStore } from '@/store/useGameStore';
-import { Coins, Settings, Users, Cpu, Trophy, Crown, LogIn, LogOut, User } from 'lucide-react';
+import { Settings, Users, Cpu, Trophy, Crown, LogIn, LogOut, User } from 'lucide-react';
 import Image from 'next/image';
 import { signInWithGoogle, logOut } from '@/lib/firebase';
+import { CoinIcon } from '@/components/CoinIcon';
 
 export default function Home() {
   const router = useRouter();
@@ -38,7 +39,7 @@ export default function Home() {
         )}
         
         <div className="flex items-center gap-2 bg-black/50 rounded-full px-4 py-2 border border-[#FFC107]/30 shadow-[0_0_10px_rgba(255,193,7,0.2)]">
-          <Coins className="w-5 h-5 text-[#FFC107]" />
+          <CoinIcon className="w-6 h-6" />
           <span className="font-bold text-[#FFC107]">₹{coins}</span>
         </div>
       </motion.div>

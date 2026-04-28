@@ -11,7 +11,8 @@ import Image from 'next/image';
 import { GlassCard } from '@/components/GlassCard';
 import { GlassButton } from '@/components/GlassButton';
 import { useGameStore } from '@/store/useGameStore';
-import { ChevronLeft, RotateCcw, Undo2, Lightbulb, FlipVertical, MoreVertical, Trophy, Coins } from 'lucide-react';
+import { ChevronLeft, RotateCcw, Undo2, Lightbulb, FlipVertical, MoreVertical, Trophy } from 'lucide-react';
+import { CoinIcon } from '@/components/CoinIcon';
 import { SoundManager } from '@/lib/sounds';
 import { doc, onSnapshot, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
@@ -490,7 +491,7 @@ function GameContent() {
         </div>
         {(mode === 'challenge' || mode === 'online') && bet > 0 && (
           <div className="flex items-center gap-1 bg-black/50 px-3 py-1 rounded-full border border-[#FFC107]/30">
-            <Coins className="w-4 h-4 text-[#FFC107]" />
+            <CoinIcon className="w-4 h-4" />
             <span className="font-bold text-sm text-[#FFC107]">₹{coins}</span>
           </div>
         )}
@@ -542,12 +543,12 @@ function GameContent() {
               
               {((mode === 'challenge' || mode === 'online') && isPlayerWinner) && bet > 0 && (
                 <div className="mb-6 text-[#FFC107] font-bold text-xl flex items-center gap-2">
-                  + ₹{bet} <Coins className="w-6 h-6" />
+                  + ₹{bet} <CoinIcon className="w-6 h-6" />
                 </div>
               )}
               {((mode === 'challenge' || mode === 'online') && isPlayerLoser) && bet > 0 && (
                 <div className="mb-6 text-[#FF4C4C] font-bold text-xl flex items-center gap-2">
-                  - ₹{bet} <Coins className="w-6 h-6" />
+                  - ₹{bet} <CoinIcon className="w-6 h-6" />
                 </div>
               )}
 

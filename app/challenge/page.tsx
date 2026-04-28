@@ -5,7 +5,8 @@ import { useRouter } from 'next/navigation';
 import { GlassCard } from '@/components/GlassCard';
 import { GlassButton } from '@/components/GlassButton';
 import { useGameStore } from '@/store/useGameStore';
-import { ChevronLeft, Coins, MapPin } from 'lucide-react';
+import { ChevronLeft, MapPin } from 'lucide-react';
+import { CoinIcon } from '@/components/CoinIcon';
 
 const CHALLENGES = [
   { id: 'tajmahal', name: 'Taj Mahal', entry: 100, win: 200, bgGradient: 'from-slate-300/20 to-slate-500/5', accent: 'text-slate-300' },
@@ -43,7 +44,7 @@ export default function Challenge() {
           <h1 className="text-2xl font-bold font-serif tracking-wide">ONLINE CHALLENGE</h1>
         </div>
         <div className="flex items-center gap-2 bg-black/50 rounded-full px-4 py-2 border border-[#FFC107]/30">
-          <Coins className="w-5 h-5 text-[#FFC107]" />
+          <CoinIcon className="w-5 h-5" />
           <span className="font-bold text-[#FFC107]">₹{coins}</span>
         </div>
       </div>

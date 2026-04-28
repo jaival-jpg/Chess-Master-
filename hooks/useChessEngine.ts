@@ -47,8 +47,8 @@ export function useChessEngine(
     
     const initEngine = async () => {
       try {
-        // Fetch stockfish.js as text to bypass cross-origin worker restrictions
-        const response = await fetch('https://cdnjs.cloudflare.com/ajax/libs/stockfish.js/10.0.0/stockfish.js');
+        // Fetch stockfish.js from local API route to avoid CORS and offline issues
+        const response = await fetch('/api/stockfish');
         const text = await response.text();
         const blob = new Blob([text], { type: 'application/javascript' });
         worker = new Worker(URL.createObjectURL(blob));

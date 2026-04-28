@@ -100,6 +100,11 @@ export const signInWithGoogle = async () => {
       return;
     }
     console.error("Error signing in with Google", error);
+    if (error.code === 'auth/unauthorized-domain') {
+       alert('Authentication failed: Your domain is not authorized in Firebase.\n\nTo fix this for Vercel:\n1. Go to Firebase Console -> Authentication -> Settings -> Authorized domains\n2. Add this website\'s domain (e.g. your-app.vercel.app).');
+    } else {
+       alert(`Sign In Error: ${error.message || error}`);
+    }
   }
 };
 
