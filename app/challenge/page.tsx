@@ -40,7 +40,7 @@ export default function Challenge() {
           >
             <ChevronLeft className="w-6 h-6" />
           </button>
-          <h1 className="text-2xl font-bold font-serif tracking-wide">CHALLENGE</h1>
+          <h1 className="text-2xl font-bold font-serif tracking-wide">ONLINE CHALLENGE</h1>
         </div>
         <div className="flex items-center gap-2 bg-black/50 rounded-full px-4 py-2 border border-[#FFC107]/30">
           <Coins className="w-5 h-5 text-[#FFC107]" />

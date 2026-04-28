@@ -81,10 +81,13 @@ service cloud.firestore {
       let isGameEnd = oldData.status == 'playing' && data.status == 'finished' && isPlayer &&
                       data.winner is string && data.winner.size() <= 50 &&
                       areImmutableFieldsUnchanged(['players', 'bet', 'createdAt']);
+                      
+      let isCancelling = oldData.status == 'waiting' && data.status == 'cancelled' && isPlayer &&
+                         areImmutableFieldsUnchanged(['players', 'bet', 'createdAt', 'fen', 'history']);
 
       return hasOnlyAllowedFields(['id', 'status', 'players', 'fen', 'history', 'bet', 'winner', 'createdAt', 'updatedAt']) &&
              data.updatedAt is timestamp &&
-             (isJoining || isMoveUpdate || isGameEnd);
+             (isJoining || isMoveUpdate || isGameEnd || isCancelling);
     }
 
     function isValidGameCreate() {

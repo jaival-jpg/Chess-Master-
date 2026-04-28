@@ -82,11 +82,14 @@ function MatchmakingContent() {
         
         setGameId(newGameRef.id);
 
+        let matchFound = false;
+
         // 3. Listen for opponent to join
         unsubscribe = onSnapshot(doc(db, 'games', newGameRef.id), (docSnap) => {
           if (docSnap.exists()) {
             const data = docSnap.data();
             if (data.status === 'playing' && data.players.black) {
+              matchFound = true;
               setStatus('found');
               setTimeout(() => {
                 router.push(`/game?mode=online&gameId=${newGameRef.id}`);
@@ -98,6 +101,23 @@ function MatchmakingContent() {
            setStatus('error');
            setErrorMsg('Connection error during matchmaking.');
         });
+
+        // 4. Timeout after 10 seconds to play against computer
+        setTimeout(async () => {
+          if (!isCancelled && !matchFound) {
+            isCancelled = true;
+            if (unsubscribe) unsubscribe();
+            
+            // Cancel the online game
+            await updateDoc(doc(db, 'games', newGameRef.id), {
+              status: 'cancelled',
+              updatedAt: serverTimestamp()
+            }).catch(console.error);
+            
+            // Redirect to challenge mode (vs computer)
+            router.push(`/game?mode=challenge&bet=${bet}`);
+          }
+        }, 10000);
 
       } catch (error) {
         console.error("Matchmaking error:", error);

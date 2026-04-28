@@ -1,13 +1,16 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { onAuthStateChanged } from 'firebase/auth';
 import { doc, onSnapshot } from 'firebase/firestore';
-import { auth, db } from '@/lib/firebase';
+import { auth, db, handleFirestoreError, OperationType } from '@/lib/firebase';
 import { useGameStore } from '@/store/useGameStore';
 
 export function FirebaseProvider({ children }: { children: React.ReactNode }) {
   const { setUser, setAuthReady } = useGameStore();
+  const [error, setError] = useState<Error | null>(null);
+
+  if (error) throw error;
 
   useEffect(() => {
     const unsubscribeAuth = onAuthStateChanged(auth, (firebaseUser) => {
@@ -34,8 +37,16 @@ export function FirebaseProvider({ children }: { children: React.ReactNode }) {
             });
           }
           setAuthReady(true);
-        }, (error) => {
-           console.error("Error fetching user data:", error);
+        }, (err: any) => {
+           if (err.code === 'permission-denied' && !auth.currentUser) {
+             // Ignore error caused by signing out before unsubscribe
+             return;
+           }
+           try {
+             handleFirestoreError(err, OperationType.GET, `users/${firebaseUser.uid}`);
+           } catch (e) {
+             setError(e as Error);
+           }
            setAuthReady(true);
         });
 

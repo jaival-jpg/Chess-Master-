@@ -37,6 +37,7 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  distDir: process.env.NODE_ENV === 'development' ? '.next-dev' : '.next',
   output: 'standalone',
   transpilePackages: ['motion'],
   webpack: (config, {dev}) => {

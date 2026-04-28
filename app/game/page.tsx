@@ -63,9 +63,9 @@ function GameContent() {
   useEffect(() => {
     if (mode === 'challenge') {
       const timer = setTimeout(() => {
-        const names = ['John', 'Niki', 'Riya', 'Alex', 'Sam', 'Emma', 'David', 'Sarah', 'Michael', 'Jessica'];
+        const names = ['Rocky', 'Rahul', 'shakshi', 'dhurandar', 'Abhijeet', 'Riya', 'Rudra'];
         const randomName = names[Math.floor(Math.random() * names.length)];
-        setChallengeOpponent(`${randomName} (Computer)`);
+        setChallengeOpponent(randomName);
       }, 0);
       return () => clearTimeout(timer);
     }
@@ -204,11 +204,12 @@ function GameContent() {
           }).catch(console.error);
         }
       } else if (winner) {
-        if (settings.sound) {
-          if (mode === 'pvc' && winner === 'Black') SoundManager.playLose();
-          else SoundManager.playWin();
+        if (isWinner) {
+          if (settings.sound) SoundManager.playWin();
+          confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+        } else if (isLoser) {
+          if (settings.sound) SoundManager.playLose();
         }
-        confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
       }
     }
   }, [isGameOver, winner, mode, bet, addCoins, removeCoins, settings.sound, playerColor, gameId]);
@@ -362,6 +363,18 @@ function GameContent() {
     });
     return pieceComponents;
   }, []);
+
+  const isPlayerWinner = winner ? ((winner === 'White' && playerColor === 'w') || (winner === 'Black' && playerColor === 'b')) : false;
+  const isPlayerLoser = winner ? ((winner === 'White' && playerColor === 'b') || (winner === 'Black' && playerColor === 'w')) : false;
+
+  let modalBorderColor = 'border-[#00FF9C]/50 shadow-[0_0_50px_rgba(0,255,156,0.2)]';
+  if (winner) {
+    if (isPlayerWinner) {
+      modalBorderColor = 'border-green-500 shadow-[0_0_50px_rgba(34,197,94,0.4)]';
+    } else if (isPlayerLoser) {
+      modalBorderColor = 'border-red-500 shadow-[0_0_50px_rgba(239,68,68,0.4)]';
+    }
+  }
 
   return (
     <div className="flex-1 flex flex-col p-4 relative h-full">
@@ -517,22 +530,22 @@ function GameContent() {
             exit={{ opacity: 0 }}
             className="absolute inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-6"
           >
-            <GlassCard className="w-full max-w-sm p-8 flex flex-col items-center text-center border-[#00FF9C]/50 shadow-[0_0_50px_rgba(0,255,156,0.2)]">
+            <GlassCard className={`w-full max-w-sm p-8 flex flex-col items-center text-center ${modalBorderColor}`}>
               <h2 className="text-4xl font-black font-serif mb-2 text-transparent bg-clip-text bg-gradient-to-b from-white to-gray-400">
                 {mode === 'online' 
-                  ? (winner ? ((winner === 'White' && playerColor === 'w') || (winner === 'Black' && playerColor === 'b') ? 'You Win!' : 'You Lose!') : 'Game Drawn')
-                  : (winner ? `${winner} Wins!` : 'Game Drawn')}
+                  ? (winner ? (isPlayerWinner ? 'You Win!' : 'You Lose!') : 'Game Drawn')
+                  : mode === 'pvc' || mode === 'challenge'
+                    ? (winner ? (isPlayerWinner ? 'you win this match' : 'You lost this match') : 'Game Drawn')
+                    : (winner ? `${winner} Wins!` : 'Game Drawn')}
               </h2>
               <p className="text-[#00FF9C] font-mono mb-6 uppercase tracking-widest">{reason}</p>
               
-              {((mode === 'challenge' && winner === 'White') || 
-                (mode === 'online' && ((winner === 'White' && playerColor === 'w') || (winner === 'Black' && playerColor === 'b')))) && bet > 0 && (
+              {((mode === 'challenge' || mode === 'online') && isPlayerWinner) && bet > 0 && (
                 <div className="mb-6 text-[#FFC107] font-bold text-xl flex items-center gap-2">
                   + ₹{bet} <Coins className="w-6 h-6" />
                 </div>
               )}
-              {((mode === 'challenge' && winner === 'Black') || 
-                (mode === 'online' && ((winner === 'White' && playerColor === 'b') || (winner === 'Black' && playerColor === 'w')))) && bet > 0 && (
+              {((mode === 'challenge' || mode === 'online') && isPlayerLoser) && bet > 0 && (
                 <div className="mb-6 text-[#FF4C4C] font-bold text-xl flex items-center gap-2">
                   - ₹{bet} <Coins className="w-6 h-6" />
                 </div>
