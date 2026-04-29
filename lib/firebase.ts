@@ -1,5 +1,5 @@
 import { initializeApp, getApps, getApp } from 'firebase/app';
-import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, Auth } from 'firebase/auth';
+import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, signOut, onAuthStateChanged, Auth } from 'firebase/auth';
 import { initializeFirestore, Firestore, doc, getDoc, setDoc, updateDoc, onSnapshot, collection, query, where, getDocs, addDoc, serverTimestamp, getDocFromServer } from 'firebase/firestore';
 import firebaseConfig from '../firebase-applet-config.json';
 
@@ -66,33 +66,12 @@ export function handleFirestoreError(error: unknown, operationType: OperationTyp
 
 export const signInWithGoogle = async () => {
   try {
-    const result = await signInWithPopup(auth, googleProvider);
-    const user = result.user;
-    
-    // Check if user exists in Firestore
-    const userRef = doc(db, 'users', user.uid);
-    let userSnap;
-    try {
-      userSnap = await getDoc(userRef);
-    } catch (error) {
-      handleFirestoreError(error, OperationType.GET, `users/${user.uid}`);
-      return;
-    }
-    
-    if (!userSnap.exists()) {
-      // Create new user profile
-      try {
-        await setDoc(userRef, {
-          uid: user.uid,
-          displayName: user.displayName || 'Player',
-          email: user.email || null,
-          photoURL: user.photoURL || null,
-          coins: 1000, // Initial coins
-          createdAt: serverTimestamp()
-        });
-      } catch (error) {
-        handleFirestoreError(error, OperationType.WRITE, `users/${user.uid}`);
-      }
+    const isIframe = window !== window.parent;
+    if (isIframe) {
+      await signInWithPopup(auth, googleProvider);
+    } else {
+      await signInWithRedirect(auth, googleProvider);
+      return; 
     }
   } catch (error: any) {
     if (error.code === 'auth/cancelled-popup-request' || error.code === 'auth/popup-closed-by-user') {
